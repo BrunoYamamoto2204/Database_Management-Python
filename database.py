@@ -13,7 +13,13 @@ def connect_database():
             try:
                 Port = int(Port)
             except ValueError:
-                print("\033[31m[!] Invalid Port: Must be an integer number!\033[m")
+                print("\n\033[31m[!] Invalid Port: Must be an integer number!\033[m")
+                cont = input(f"Type \033[33m-q\033[m to quit or press \033[33mENTER\033[m to try again:")
+
+                if cont == '-q':
+                    conn = None
+                    break
+
                 continue
 
             conn = psycopg2.connect(
@@ -30,10 +36,15 @@ def connect_database():
 
         except psycopg2.OperationalError as error:
             error_message = str(error)
-            print(f"\033[31m[!] Connect failed! Invalid parameters:")
+            print(f"\033[31m\n[!] Connect failed! Invalid parameters\033[m")
+            cont = input(f"Type \033[33m-q\033[m to quit or press \033[33mENTER\033[m to try again:")
 
-        except (Exception,psycopg2.DatabaseError,TypeError,psycopg2.OperationalError) as Error:
-            print(f"\033[4;31m\nAn error occured:\033[m \033[31m{Error}\033[m")
+            if cont == '-q':
+                conn = None
+                break
+
+        except (Exception,psycopg2.DatabaseError,psycopg2.OperationalError) as Error:
+            print(f"\033[31m\n[!] An error occured:\033[m \033[31m{Error}\033[m")
             cont = input(f"Type \033[33m-q\033[m to quit or press \033[33mENTER\033[m to try again:")
 
             if cont == '-q':
@@ -42,4 +53,22 @@ def connect_database():
 
     return conn
 
-# def create_database():
+def create_database(connection, dbname):
+    try:
+        connection.autocommit = True
+        cur = connection.cursor()
+        create_query = f"CREATE DATABASE {dbname}"
+        cur.execute(create_query)
+
+        # Save the changes
+        connection.commit()
+        print("\033[32m[+] New database has been created!\033[m")
+        return True
+
+    except psycopg2.errors.DuplicateDatabase:
+        print(f"\033[31m[-] {dbname} database already exists!\033[m")
+        return False
+
+    except (Exception, psycopg2.DatabaseError):
+        print("\033[31m[-] FAILED TO CONNECT!\033[m")
+        connection.rollback()
