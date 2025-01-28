@@ -23,12 +23,13 @@ while access:
     print("[ 1 ] Enter current Database")
     print("[ 2 ] Create a new Database")
     print("[ 3 ] Access other Database")
-    create_access = ValidAnswer.create_access()
+    create_access = ValidAnswer.int_one_to_three()
 
     print("-" * 40)
 
     if create_access == 1:
         print("Chose an action: \n")
+        print("[1] Create Table")
         print("[-q] Leave application")
 
         choice = input("\nChoice: ")
@@ -36,7 +37,7 @@ while access:
             break
 
     if create_access == 2:
-        dbName = input("New Database name: ")
+        dbName = input("New Database name: ").strip()
         createDB = database.create_database(current_conn,dbName)
 
     if create_access == 3:
