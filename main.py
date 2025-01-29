@@ -30,15 +30,24 @@ while access:
     if create_access == 1:
         print("Chose an action: \n")
         print("[1] Create Table")
+        print("[2] Insert Data")
         print("[-q] Leave application")
 
         choice = input("\nChoice: ")
+
+        if int(choice) == 1:
+            table_name = input("New Table name: ").strip()
+            database.create_table(current_conn,table_name)
+
+        if int(choice) == 2:
+            database.insert_data(current_conn)
+
         if choice == "-q":
             break
 
     if create_access == 2:
         dbName = input("New Database name: ").strip()
-        createDB = database.create_database(current_conn,dbName)
+        database.create_database(current_conn,dbName)
 
     if create_access == 3:
         current_conn = database.connect_database()
