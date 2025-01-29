@@ -23,36 +23,42 @@ while access:
     print("[ 1 ] Enter current Database")
     print("[ 2 ] Create a new Database")
     print("[ 3 ] Access other Database")
-    create_access = ValidAnswer.int_one_to_three()
+    create_access = ValidAnswer.choose(1,3)
 
     print("-" * 40)
 
-    if create_access == 1:
-        print("Chose an action: \n")
-        print("[1] Create Table")
-        print("[2] Insert Data")
-        print("[-q] Leave application")
+    while True:
 
-        choice = input("\nChoice: ")
+        if create_access == 1:
+            print("\033[1;33mChose an action:\033[m \n")
+            print("[1] Create Table")
+            print("[2] Insert Data")
+            print("[3] Edit Data")
+            print("[-q] Leave application")
 
-        if int(choice) == 1:
-            table_name = input("New Table name: ").strip()
-            database.create_table(current_conn,table_name)
+            choice = ValidAnswer.choose_or_quit(1,3)
 
-        if int(choice) == 2:
-            database.insert_data(current_conn)
+            if choice == "-q":
+                break
 
-        if choice == "-q":
-            break
+            if int(choice) == 1:
+                table_name = input("\033[33mNew Table name: \033[m").strip()
+                database.create_table(current_conn,table_name)
 
-    if create_access == 2:
-        dbName = input("New Database name: ").strip()
-        database.create_database(current_conn,dbName)
+            if int(choice) == 2:
+                database.insert_data(current_conn)
 
-    if create_access == 3:
-        current_conn = database.connect_database()
-        if current_conn is None:
-            continue
+            if int(choice) == 3:
+                database.update_data(current_conn)
+
+        if create_access == 2:
+            dbName = input("New Database name: ").strip()
+            database.create_database(current_conn,dbName)
+
+        if create_access == 3:
+            current_conn = database.connect_database()
+            if current_conn is None:
+                continue
 
 
 

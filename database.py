@@ -88,12 +88,12 @@ def create_table(connection, table_name):
             print("[1] Primary Key")
             print("[2] Foreign Key")
             print("[3] Normal data")
-            column_choice = ValidAnswer.int_one_to_three()
+            column_choice = ValidAnswer.choose(1,3)
 
             if column_choice == 1:
                 print("\n\033[1;34mPRIMARY KEY:\033[m")
                 print("\033[4m*Serial Primary Key\033[m\n")
-                pk = input("Column Name: ").strip()
+                pk = input("\033[33mColumn Name: \033[m").strip()
                 pk_query = f"{pk} SERIAL PRIMARY KEY"
 
                 create_table += pk_query
@@ -162,12 +162,12 @@ def insert_data(connection):
     connection.autocommit = True
 
     # List all tables and their columns
-    table_management.list_tables_columns(connection)
+    table_management.list_tables_and_columns(connection)
 
     columns_name = ''
     column_values = ''
 
-    print("\033[1;4m*Primary Keys are SERIAL and don't need a value\033[m\n")
+    print("\033[1;4m*Primary Keys are SERIAL and don't need a value\033[m")
     print("\n\033[1;34mINSERT DATA:\033[m")
     table_name = input("Table Name: ")
     table_columns = table_management.list_column_names_type(connection, table_name)
@@ -209,14 +209,43 @@ def insert_data(connection):
 
         # Check if it has been added to the table
         try:
-            insert_query = f"INSERTO INTO {table_name}({columns_name}) VALUES ({column_values})"
+            insert_query = f"INSERT INTO {table_name}({columns_name}) VALUES ({column_values})"
             cur.execute(insert_query)
-            print(f"\nFinal query: {insert_query}")
+            print(f"\n\033[33mFinal query:\033[m {insert_query}")
             print("\033[32m[+] New values has been entered!\033[m")
         except (psycopg2.errors.UniqueViolation, Exception) as error:
             print("="*40)
             print("\n\n\033[31m[!] Something went wrong while creating the table\033[m")
             print(error)
+
+    print("=" * 40)
+    cur.close()
+
+def update_data(connection):
+    cur = connection.cursor()
+    connection.autocommit = True
+
+    # List all tables and their columns
+    table_management.list_tables_and_columns(connection)
+    print("\n\033[1;34mINSERT DATA:\033[m")
+    table = input("Table name: ")
+
+    # List columns and their values
+    table_management.list_column_values(connection,table)
+    column = input("\033[36mModify column:\033[m ")
+    value_change = input("\033[36mNew data value:\033[m ")
+    id_value = input("\033[36mId \033[m(Row identifier): ")
+
+    try:
+        update_query = f"UPDATE {table} SET {column} = '{value_change}' WHERE id = {id_value}"
+        cur.execute(update_query)
+        print("=" * 40)
+        print(f"\n\033[33mFinal query:\033[m {update_query}")
+        print("\033[32m[!] Data Updated\033[m")
+    except (Exception) as error:
+        print("=" * 40)
+        print("\n\n\033[31m[!] Something went wrong while creating the table\033[m")
+        print(error)
 
     print("=" * 40)
     cur.close()
