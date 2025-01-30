@@ -1,15 +1,3 @@
-def choose(first, last ):
-    while True:
-        try:
-            choice = int(input("\n\033[1;3mChoice:\033[m "))
-            if first < choice > last:
-                print("\033[31mInvalid choice!\033[m")
-            else:
-                return choice
-
-        except ValueError:
-            print("\033[31mInvalid Format!\033[m ")
-
 def choose_or_quit(first, last):
     while True:
         try:

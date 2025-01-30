@@ -88,7 +88,11 @@ def create_table(connection, table_name):
             print("[1] Primary Key")
             print("[2] Foreign Key")
             print("[3] Normal data")
-            column_choice = ValidAnswer.choose(1,3)
+            print("[-q] Go Back ")
+
+            column_choice = ValidAnswer.choose_or_quit(1,3)
+            if column_choice == "-q":
+                break
 
             if column_choice == 1:
                 print("\n\033[1;34mPRIMARY KEY:\033[m")
@@ -222,30 +226,114 @@ def insert_data(connection):
     cur.close()
 
 def update_data(connection):
+    query_list = []
     cur = connection.cursor()
     connection.autocommit = True
 
-    # List all tables and their columns
-    table_management.list_tables_and_columns(connection)
-    print("\n\033[1;34mINSERT DATA:\033[m")
-    table = input("Table name: ")
+    while True:
+        # List all tables and their columns
+        table_management.list_tables_and_columns(connection)
+        print("\n\033[1;34mINSERT DATA:\033[m")
+        table = input("Table name: ")
 
-    # List columns and their values
-    table_management.list_column_values(connection,table)
-    column = input("\033[36mModify column:\033[m ")
-    value_change = input("\033[36mNew data value:\033[m ")
-    id_value = input("\033[36mId \033[m(Row identifier): ")
+        primary_keys = table_management.is_pk(connection, table)
 
-    try:
-        update_query = f"UPDATE {table} SET {column} = '{value_change}' WHERE id = {id_value}"
-        cur.execute(update_query)
-        print("=" * 40)
-        print(f"\n\033[33mFinal query:\033[m {update_query}")
-        print("\033[32m[!] Data Updated\033[m")
-    except (Exception) as error:
-        print("=" * 40)
-        print("\n\n\033[31m[!] Something went wrong while creating the table\033[m")
-        print(error)
+        # List columns and their values
+        table_management.list_column_values(connection,table)
+        column = input("\033[36mModify column:\033[m ")
+        value_change = input("\033[36mNew data value:\033[m ")
+        id_value = input("\033[36mId \033[m(Row identifier): ")
+        print()
+
+        try:
+            update_query = f"UPDATE {table} SET {column} = '{value_change}' WHERE {primary_keys[0]} = {id_value}"
+            cur.execute(update_query)
+            query_list.append(update_query)
+
+            more_edit = ValidAnswer.yes_or_no("\033[33mContinue modifying?\033[m")
+            if more_edit == "Y":
+                continue
+            else:
+                print("=" * 40)
+                print(f"\033[33mFinal query:\033[m")
+                for q in query_list:
+                    print(f"- {q}")
+                print("\033[32m[!] Data Updated\033[m")
+                break
+
+        except (Exception) as error:
+            print("=" * 40)
+            print("\n\n\033[31m[!] Something went wrong to modify the table\033[m")
+            print(error)
 
     print("=" * 40)
     cur.close()
+
+def delete_data_database(connection):
+    cur = connection.cursor()
+    connection.autocommit = True
+    query_list = []
+
+    while True:
+        # List all tables and their columns
+        print("\n\033[1;34mDELETE DATA or REMOVE TABLE:\033[m")
+        print("[1] DELETE DATA")
+        print("[2] REMOVE TABLE")
+        print("[-q] Go Back ")
+
+        choice = ValidAnswer.choose_or_quit(1,2)
+        if choice == "-q":
+            break
+
+        if choice == 1:
+            table_management.list_tables_and_columns(connection)
+            table_name = input("Table name: ")
+
+            pk = table_management.is_pk(connection,table_name)
+
+            # List columns and their values
+            table_management.list_column_values(connection, table_name)
+            id_value = input("\033[36mId \033[m(Row identifier): ")
+            print()
+
+            try:
+                delete_query = f"DELETE FROM {table_name} WHERE {pk[0]} = {id_value}"
+                cur.execute(delete_query)
+                query_list.append(delete_query)
+
+                more_edit = ValidAnswer.yes_or_no("\033[33mContinue deleting?\033[m")
+                if more_edit == "Y":
+                    continue
+                else:
+                    print("=" * 40)
+                    print(f"\033[33mFinal query:\033[m")
+                    for q in query_list:
+                        print(f"- {q}")
+                    print("\033[32m[!] Data Updated\033[m")
+                    break
+
+            except (Exception) as error:
+                print("=" * 40)
+                print("\n\n\033[31m[!] Something went wrong to remove\033[m")
+                print(error)
+
+        else:
+            table_management.list_tables_and_columns(connection)
+            table_name = input("Table name: ")
+            try:
+                drop_query = f"DROP TABLE {table_name}"
+                cur.execute(drop_query)
+                print("=" * 40)
+                print(f"\033[33mFinal query:\033[m {drop_query}")
+                print("\033[32m[!] TABLE REMOVED\033[m")
+                break
+
+            except Exception as error:
+                print("=" * 40)
+                print("\n\n\033[31m[!] Something went wrong to drop table\033[m")
+                print(error)
+
+    print("=" * 40)
+    cur.close()
+
+

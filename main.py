@@ -23,7 +23,11 @@ while access:
     print("[ 1 ] Enter current Database")
     print("[ 2 ] Create a new Database")
     print("[ 3 ] Access other Database")
-    create_access = ValidAnswer.choose(1,3)
+    print("[-q ] Leave application")
+
+    create_access = ValidAnswer.choose_or_quit(1,3)
+    if create_access == "-q":
+        break
 
     print("-" * 40)
 
@@ -34,7 +38,8 @@ while access:
             print("[1] Create Table")
             print("[2] Insert Data")
             print("[3] Edit Data")
-            print("[-q] Leave application")
+            print("[4] Delete Data")
+            print("[-q] Go Back ")
 
             choice = ValidAnswer.choose_or_quit(1,3)
 
@@ -50,6 +55,9 @@ while access:
 
             if int(choice) == 3:
                 database.update_data(current_conn)
+
+            if int(choice) == 4:
+                database.delete_data_database(current_conn)
 
         if create_access == 2:
             dbName = input("New Database name: ").strip()
