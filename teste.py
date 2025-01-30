@@ -12,5 +12,5 @@ connection = psycopg2.connect(
 )
 
 
-database.delete_data_database(connection)
+database.insert_data(connection)
 

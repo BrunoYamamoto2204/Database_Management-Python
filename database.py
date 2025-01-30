@@ -164,63 +164,76 @@ def create_table(connection, table_name):
 def insert_data(connection):
     cur = connection.cursor()
     connection.autocommit = True
+    query_list = []
 
-    # List all tables and their columns
-    table_management.list_tables_and_columns(connection)
+    while True:
+        # List all tables and their columns
+        table_management.list_tables_and_columns(connection)
 
-    columns_name = ''
-    column_values = ''
+        columns_name = ''
+        column_values = ''
 
-    print("\033[1;4m*Primary Keys are SERIAL and don't need a value\033[m")
-    print("\n\033[1;34mINSERT DATA:\033[m")
-    table_name = input("Table Name: ")
-    table_columns = table_management.list_column_names_type(connection, table_name)
-    print()
+        print("\033[1;4m*Primary Keys are SERIAL and don't need a value\033[m")
+        print("\n\033[1;34mINSERT DATA:\033[m")
+        table_name = input("Table Name: ")
+        table_columns = table_management.list_column_names_type(connection, table_name)
+        print()
 
-    # If return with no columns, it doesn't exist
-    if len(table_columns) == 0:
-        print(f"\033[31m[!] {table_name} table do not exist\033[m")
+        # If return with no columns, it doesn't exist
+        if len(table_columns) == 0:
+            print(f"\033[31m[!] {table_name} table do not exist\033[m")
 
-    else:
-        for column in range(len(table_columns)):
+        else:
+            for column in range(len(table_columns)):
 
-            # Check PKs of the table
-            primary_keys = table_management.is_pk(connection, table_name)
-            if table_columns[column][0] in primary_keys:
-                continue
+                # Check PKs of the table
+                primary_keys = table_management.is_pk(connection, table_name)
+                if table_columns[column][0] in primary_keys:
+                    continue
 
-            # Insert value
-            column_value = input(f"\033[36m{table_columns[column][0]}:\033[m ")
+                # Insert value
+                column_value = input(f"\033[36m{table_columns[column][0]}:\033[m ")
 
-            # Verifying if it is the last column
-            if column == len(table_columns) - 1:
-                columns_name += table_columns[column][0]
+                # Verifying if it is the last column
+                if column == len(table_columns) - 1:
+                    columns_name += table_columns[column][0]
 
-                # Verify if column have string type
-                if table_columns[column][1] == 'character varying':
-                    column_values += f"'{column_value}'"
+                    # Verify if column have string type
+                    if table_columns[column][1] == 'character varying':
+                        column_values += f"'{column_value}'"
+                    else:
+                        column_values += column_value
+                # Have more columns
                 else:
-                    column_values += column_value
-            # Have more columns
-            else:
-                columns_name += table_columns[column][0] + ","
+                    columns_name += table_columns[column][0] + ","
 
-                # Verify if column have string type
-                if table_columns[column][1] == 'character varying':
-                    column_values += f"'{column_value}',"
+                    # Verify if column have string type
+                    if table_columns[column][1] == 'character varying':
+                        column_values += f"'{column_value}',"
+                    else:
+                        column_values += column_value + ","
+
+            # Check if it has been added to the table
+            try:
+                insert_query = f"INSERT INTO {table_name}({columns_name}) VALUES ({column_values})"
+                cur.execute(insert_query)
+                query_list.append(insert_query)
+
+                more_edit = ValidAnswer.yes_or_no("\n\033[33mContinue modifying?\033[m")
+                if more_edit == "Y":
+                    continue
                 else:
-                    column_values += column_value + ","
+                    print("=" * 40)
+                    print(f"\033[33mFinal query:\033[m")
+                    for q in query_list:
+                        print(f"- {q}")
+                    print("\033[32m[!] Data Updated\033[m")
+                    break
 
-        # Check if it has been added to the table
-        try:
-            insert_query = f"INSERT INTO {table_name}({columns_name}) VALUES ({column_values})"
-            cur.execute(insert_query)
-            print(f"\n\033[33mFinal query:\033[m {insert_query}")
-            print("\033[32m[+] New values has been entered!\033[m")
-        except (psycopg2.errors.UniqueViolation, Exception) as error:
-            print("="*40)
-            print("\n\n\033[31m[!] Something went wrong while creating the table\033[m")
-            print(error)
+            except (psycopg2.errors.UniqueViolation, Exception) as error:
+                print("="*40)
+                print("\n\n\033[31m[!] Something went wrong while creating the table\033[m")
+                print(error)
 
     print("=" * 40)
     cur.close()
