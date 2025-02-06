@@ -6,7 +6,7 @@ import table_management
 connection = psycopg2.connect(
     database = 'teste',
     user = 'postgres',
-    password = '*%(22bru04no06)?',
+    password = '',
     host = 'localhost',
     port = 5432
 )
